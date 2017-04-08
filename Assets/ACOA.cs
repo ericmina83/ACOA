@@ -18,9 +18,10 @@ public class ACOA : MonoBehaviour {
 	//parameter
 	public float alpha = 0;
 	public float beta = 0;
-	float p = 0.01f;
-	public float Q = 10000.0f;
+	float p = 0.5f;
+	public float Q = 1.0f;
 	bool running = false;
+    readonly int countOfAnts = 20;
 
 	public static int mapSize = 20;
 
@@ -45,16 +46,20 @@ public class ACOA : MonoBehaviour {
 		for (int i = 0; i < mapSize; i++) {
 			map.Add(new List<Spot> ());
 			for (int j = 0; j < mapSize; j++) {
-				Spot spot = GameObject.Instantiate<Spot>(spotPrefab, new Vector3 (i , j, 3), new Quaternion (), spotsParrent.transform);
-				map[i].Add(spot);
+				Spot spot = GameObject.Instantiate<Spot>(spotPrefab);
+                spot.transform.SetParent(spotsParrent.transform);
+                spot.transform.position = new Vector3(i, j, 3);
+
+                map[i].Add(spot);
 			}
 		}
 
 		map [0] [0].spotType = Spot.SPOT_TYPE.START;
 		map [stopX] [stopY].spotType = Spot.SPOT_TYPE.STOP;
 
-		for (int i = 0; i < 20; i++) {
-			Ant ant = GameObject.Instantiate<Ant> (antPrefab, antsParrent.transform);
+		for (int i = 0; i < countOfAnts; i++) {
+			Ant ant = GameObject.Instantiate<Ant> (antPrefab);
+            ant.gameObject.transform.SetParent(antsParrent.transform);
 			ant.currentSpot = ant.prevSpot = map [startX][startY];
 			ants.Add (ant);
 		}
@@ -64,13 +69,6 @@ public class ACOA : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-
-//		for (int i = 0; i < mapSize; i++) {
-//			for (int j = 0; j < mapSize; j++) {
-//				Debug.Log ("i: " + i + " x: " + map [i] [j].transform.position.x + "\nj: " + j + " y: " + map [i] [j].transform.position.y);
-//			}
-//		}
-		
 		if(running == true)
 		{
 			
@@ -79,11 +77,11 @@ public class ACOA : MonoBehaviour {
 			}
 			for (int i = 0; i < mapSize; i++) {
 				for (int j = 0; j < mapSize; j++) {
-					map [i] [j].pheromone = (1.0f - p) * map [i] [j].pheromone;
+					map [i] [j].pheromone = p * map [i] [j].pheromone;
 				}
 			}
 			foreach (Ant ant in ants) {
-				if (ant.getFood == true)
+				if (ant.getFood)
 					ant.currentSpot.pheromone += (Q / (ant.pathCount + 1.0f));
 			}
 		}

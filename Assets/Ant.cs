@@ -43,28 +43,31 @@ public class Ant : MonoBehaviour {
 				if (xx >= 0 && yy >= 0 && xx < ACOA.mapSize && yy < ACOA.mapSize && xx != (int)prevPos.x && yy != (int)prevPos.y && !(i == 0 && j == 0)) {
 					Spot spot = ACOA.instance.map [xx] [yy];
 
-					if (((xx - x) * (x - prevPos.x) + (yy - y) * (y - prevPos.y)) >= 0.0f) {
+					//if (((xx - x) * (x - prevPos.x) + (yy - y) * (y - prevPos.y)) >= 0.0f)
+                    {
+                        
 
-						if (getFood == false) {
+                        if (getFood == false) {
 							if (spot.spotType == Spot.SPOT_TYPE.STOP) {
-								prevSpot = currentSpot;
+								prevSpot = spot;
 								currentSpot = spot;
 								getFood = true;
 								pathCount = 0.0f;
 								return;
 							}
-						} else {
-							if (spot.spotType == Spot.SPOT_TYPE.START) {
-								prevSpot = spot;
-								currentSpot = spot;
-								getFood = false;
-								pathCount = 0.0f;
-								return;
-							}
 						}
+                        else if(getFood == true)
+                            if(spot.spotType == Spot.SPOT_TYPE.START)
+                            {
+                                prevSpot = spot;
+                                currentSpot = spot;
+                                getFood = false;
+                                pathCount = 0.0f;
+                                return;
+                            }
 
-						possibleSpot.Add (spot);
-						sum += ACOA.instance.map [xx] [yy].pheromone + 0.5f;
+                        possibleSpot.Add (spot);
+						sum += ACOA.instance.map [xx] [yy].pheromone + 1.0f;
 						wheel.Add (sum);
 					}
 				}
@@ -73,7 +76,6 @@ public class Ant : MonoBehaviour {
 
 
 		if (possibleSpot.Count > 0) {
-			Debug.Log (possibleSpot.Count);
 			Spot chosenSpot = possibleSpot [Random.Range (0, possibleSpot.Count)];
 
 			float rand = Random.Range (0.0f, sum);
