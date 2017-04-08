@@ -27,10 +27,8 @@ public class ACOA : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-
 		ants = new List<Ant> ();
-
-
+        
 		int startX = 0; 
 		int startY = 0;
 
