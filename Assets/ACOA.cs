@@ -18,45 +18,12 @@ public class ACOA : MonoBehaviour {
     //parameter
     public float alpha = 0;
     public float beta = 0;
-    float p = 0.99f;//保留綠
-    const float Q = 100;//
+    float p = 0.993f;//保留綠
+    const float Q = 700f;//
     bool running = false;
-    readonly int countOfAnts = 50;
+    readonly int countOfAnts = 30;
 
     public static int mapSize = 20;
-
-
-    //public ACOA() {
-    //    int startX = 0;
-    //    int startY = 0;
-    //    int stopX = Random.Range(1, mapSize);
-    //    int stopY = Random.Range(1, mapSize);
-    //    ants = new List<Ant>();
-
-    //    //creation map
-    //    map = new List<List<Spot>>();
-    //    for (int i = 0; i < mapSize; i++) {
-    //        map.Add(new List<Spot>());
-    //        for (int j = 0; j < mapSize; j++) {
-    //            Spot spot = GameObject.Instantiate<Spot>(spotPrefab);
-    //            spot.transform.SetParent(spotsParrent.transform);
-    //            spot.transform.position = new Vector3(i, j, 3);
-
-    //            map[i].Add(spot);
-    //        }
-    //    }
-
-    //    map[0][0].spotType = Spot.SPOT_TYPE.START;
-    //    map[stopX][stopY].spotType = Spot.SPOT_TYPE.STOP;
-
-    //    //creation ant
-    //    for (int i = 0; i < countOfAnts; i++) {
-    //        Ant ant = GameObject.Instantiate<Ant>(antPrefab);
-    //        ant.gameObject.transform.SetParent(antsParrent.transform);
-    //        ant.currentSpot = ant.prevSpot = map[startX][startY];
-    //        ants.Add(ant);
-    //    }
-    //}
 
     // Use this for initialization
     void Start() {
@@ -70,13 +37,7 @@ public class ACOA : MonoBehaviour {
         int stopX = Random.Range(10, mapSize);
         //int stopX = Random.Range(1, 10);
         int stopY = Random.Range(10, mapSize);
-
         //int stopY = Random.Range(1, 10);
-
-        //while (startX == stopX && startY == stopY) {
-        //    stopX = Random.Range(1, mapSize);
-        //    stopY = Random.Range(1, mapSize);
-        //}
 
         //creation map
         map = new List<List<Spot>>();
@@ -86,23 +47,23 @@ public class ACOA : MonoBehaviour {
                 Spot spot = GameObject.Instantiate<Spot>(spotPrefab);
                 spot.transform.SetParent(spotsParrent.transform);
                 spot.transform.position = new Vector3(i, j, 3);
-
                 map[i].Add(spot);
             }
         }
 
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 40; i++) {
             map[Random.Range(1, mapSize)][Random.Range(1, mapSize)].spotType = Spot.SPOT_TYPE.WALL;
         }
 
         map[0][0].spotType = Spot.SPOT_TYPE.START;
-        map[stopX][stopY].spotType = Spot.SPOT_TYPE.STOP;
+        map[13][13].spotType = Spot.SPOT_TYPE.STOP;
 
         //creation ant
         for (int i = 0; i < countOfAnts; i++) {
             Ant ant = GameObject.Instantiate<Ant>(antPrefab);
             ant.gameObject.transform.SetParent(antsParrent.transform);
-            ant.currentSpot = ant.prevSpot = map[startX][startY];
+            //ant.currentSpot = ant.prevSpot = map[startX][startY];
+            ant.currentSpot = ant.prevSpot = map[Random.Range(0, mapSize)][Random.Range(0, mapSize)];
             ants.Add(ant);
         }
 
@@ -116,7 +77,6 @@ public class ACOA : MonoBehaviour {
             foreach (Ant ant in ants) {
                 ant.walk();
                 antsDis += ant.distance + "  ";
-
             }
             //Debug.Log(antsDis);
             string phe = "";
@@ -134,8 +94,8 @@ public class ACOA : MonoBehaviour {
             //Debug.Log((Q));
             foreach (Ant ant in ants) {
                 if (ant.getFood)
-                    ant.currentSpot.pheromone += (Q / (ant.distance));
-                ant.currentSpot.pheromone += (Q / (ant.distance));
+                    ant.currentSpot.pheromone += 1.2f*(Q / (Mathf.Pow(ant.distance,1)));
+                ant.currentSpot.pheromone += (0.01f*(Q / (Mathf.Pow(ant.distance,2))));
 
             }
         }

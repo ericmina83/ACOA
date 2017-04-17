@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class Ant : MonoBehaviour {
@@ -8,7 +7,8 @@ public class Ant : MonoBehaviour {
     public Spot currentSpot;
     public Spot prevSpot;
     List<Spot> possibleSpot = new List<Spot>();
-    private float fixedPh = 10.0f;
+    List<Spot> fallbackSpots = new List<Spot>();
+    private float fixedPh = .0f;
 
     // Use this for initialization
     void Start() {
@@ -25,6 +25,7 @@ public class Ant : MonoBehaviour {
     public void walk() {
         wheel.Clear();
         possibleSpot.Clear();
+        fallbackSpots.Clear();
         int x = (int)currentSpot.transform.position.x;
         int y = (int)currentSpot.transform.position.y;
 
@@ -41,40 +42,38 @@ public class Ant : MonoBehaviour {
                 //if (xx >= 0 && yy >= 0 && xx < ACOA.mapSize && yy < ACOA.mapSize && !(xx == (int)prevPos.x && yy == (int)prevPos.y) && !(i == 0 && j == 0)) { 
                 //看周圍費洛蒙
 
-                if (xx == (int)prevPos.x && yy == (int)prevPos.y)
+                if (xx == (int)prevPos.x && yy == (int)prevPos.y)//不往回走
                     continue;
 
                 if (xx >= 0 && yy >= 0 && xx < ACOA.mapSize && yy < ACOA.mapSize) {
-                    Spot spot = ACOA.instance.map[xx][yy];//下一個移動的地點
-                    if (spot.spotType == Spot.SPOT_TYPE.WALL)
+                    Spot nextSpot = ACOA.instance.map[xx][yy];//下一個移動的地點
+                    if (nextSpot.spotType == Spot.SPOT_TYPE.WALL)
                         continue;
-
-                    if ((i * (x - prevPos.x) + j * (y - prevPos.y)) >= 0.0f) 
-                        {
+                    if ((i * (x - prevPos.x) + j * (y - prevPos.y)) > 0.0f || currentSpot == prevSpot) {
                         if (getFood == false) {
-                            if (spot.spotType == Spot.SPOT_TYPE.STOP) {
-
-                                prevSpot = ACOA.instance.map[x][y];//
-                                //prevSpot = spot;
-                                currentSpot = spot;
+                            if (nextSpot.spotType == Spot.SPOT_TYPE.STOP) {
+                                prevSpot = nextSpot;
+                                currentSpot = nextSpot;
                                 getFood = true;
                                 distance = 0.0f;
                                 return;
                             }
                         }
                         else if (getFood == true)
-                            if (spot.spotType == Spot.SPOT_TYPE.START) {
-                                
-                                prevSpot = ACOA.instance.map[x][y];
-                                currentSpot = spot;
+                            if (nextSpot.spotType == Spot.SPOT_TYPE.START) {
+                                prevSpot = nextSpot;
+                                currentSpot = nextSpot;
                                 getFood = false;
                                 distance = 0.0f;
                                 return;
                             }
 
-                        possibleSpot.Add(spot);
+                        possibleSpot.Add(nextSpot);
                         sum += ACOA.instance.map[xx][yy].pheromone + fixedPh;
                         wheel.Add(sum);
+                    }
+                    else {
+                        fallbackSpots.Add(nextSpot);
                     }
                 }
             }
@@ -82,31 +81,36 @@ public class Ant : MonoBehaviour {
 
 
         if (possibleSpot.Count > 0) {
-            Spot chosenSpot = possibleSpot[Random.Range(0, possibleSpot.Count)];
+            //Spot chosenSpot = possibleSpot[Random.Range(0, possibleSpot.Count)];
 
             float rand = Random.Range(0.0f, sum);
 
-
-            for (int i = 0; i < wheel.Count; i++) {
+            int i = 0;
+            for (; i < wheel.Count; i++) {
                 if (rand < wheel[i]) {
-                    chosenSpot = possibleSpot[i];
                     break;
                 }
             }
+            
+            prevSpot = currentSpot;
+            currentSpot = possibleSpot[i];
+            
+        }
+        else if (fallbackSpots.Count > 0) {
+            Spot chosenSpot = fallbackSpots[Random.Range(0, fallbackSpots.Count)];
 
-
+            //prevSpot = ACOA.instance.map[x][y];
             prevSpot = currentSpot;
             currentSpot = chosenSpot;
-            distance += (currentSpot.transform.position - prevSpot.transform.position).magnitude;
-            //if (getFood == true) {
-            //    distance += (currentSpot.transform.position - prevSpot.transform.position).magnitude;
-            //}
+            //Debug.Log()
+        }
+        else {
+            currentSpot = prevSpot;
+            prevSpot = ACOA.instance.map[x][y];
         }
 
-        else {
-            Spot temp = currentSpot;
-            currentSpot = prevSpot;
-            prevSpot = temp;
-        }
+        //Debug.Log(prevSpot.transform.position + "\t" + currentSpot.transform.position);
+        distance += (currentSpot.transform.position - prevSpot.transform.position).magnitude;
+        //Debug.Log(distance);
     }
 }
